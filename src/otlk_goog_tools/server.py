@@ -31,7 +31,18 @@ class OtlkGoogToolsServer:
     def __init__(self):
         """Initialize the server."""
         self.config = get_config()
-        self.authenticator = OutlookAuthenticator(self.config)
+        
+        # Initialize authenticator using config settings
+        self.authenticator = OutlookAuthenticator(
+            use_public_client=self.config.use_public_client,
+            public_client_name=self.config.public_client.value if self.config.use_public_client else None,
+            custom_client_id=self.config.client_id,
+            custom_tenant=self.config.tenant_id,
+            custom_scopes=self.config.get_scopes_list(),
+            token_file_path=self.config.get_token_file_path(),
+            redirect_uri=self.config.redirect_uri
+        )
+        
         self.server = Server("otlk-goog-tools")
         
         # Register tools
@@ -94,7 +105,7 @@ class OtlkGoogToolsServer:
                             "subject": {"type": "string", "description": "Email subject"},
                             "body": {"type": "string", "description": "Email body"},
                             "cc": {"type": "array", "items": {"type": "string"}, "description": "CC recipients"},
-                            "bcc": {"type": "array", "items": {"type": "string"}, "description": "BCC recipients"
+                            "bcc": {"type": "array", "items": {"type": "string"}, "description": "BCC recipients"}
                         },
                         "required": ["to", "subject", "body"]
                     }
