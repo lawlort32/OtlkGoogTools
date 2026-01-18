@@ -13,12 +13,7 @@ from enum import Enum
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-
-class AuthMode(str, Enum):
-    """Authentication mode options."""
-    HYBRID = "hybrid"
-    COM = "com"
-    GRAPH = "graph"
+from .models import AuthMode
 
 
 class PublicClientType(str, Enum):
