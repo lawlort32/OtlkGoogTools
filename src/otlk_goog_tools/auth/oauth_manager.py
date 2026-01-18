@@ -161,6 +161,26 @@ class OAuthManager:
         
         self._access_token: Optional[str] = None
         self._token_data: Optional[Dict[str, Any]] = None
+        self._user_info: Optional[Dict[str, Any]] = None
+    
+    @staticmethod
+    def _is_browser_available() -> bool:
+        """Check if a browser is available for interactive auth."""
+        import os
+        import platform
+        
+        system = platform.system()
+        
+        if system == "Linux":
+            # Check for display server
+            return bool(os.environ.get('DISPLAY') or os.environ.get('WAYLAND_DISPLAY'))
+        elif system == "Darwin":  # macOS
+            return True
+        elif system == "Windows":
+            return True
+        else:
+            # Unknown system, assume no browser
+            return False
     
     def get_authenticated(self, method: str = "auto") -> bool:
         """
@@ -182,16 +202,19 @@ class OAuthManager:
         if method == "silent":
             return False
         
-        # Try browser authentication
+        # Try browser authentication (only if available)
         if method in ("auto", "browser"):
-            try:
-                if self._authenticate_browser():
-                    logger.info("Browser authentication successful")
-                    return True
-            except Exception as e:
-                logger.warning(f"Browser authentication failed: {e}")
-                if method == "browser":
-                    raise
+            if method == "browser" or self._is_browser_available():
+                try:
+                    if self._authenticate_browser():
+                        logger.info("Browser authentication successful")
+                        return True
+                except Exception as e:
+                    logger.warning(f"Browser authentication failed: {e}")
+                    if method == "browser":
+                        raise
+            elif method == "auto":
+                logger.info("Browser not available, skipping to device code flow")
         
         # Try device code flow
         if method in ("auto", "device"):
@@ -296,6 +319,16 @@ class OAuthManager:
         self._token_data = result
         self._access_token = result["access_token"]
         self.token_store.save_token(result)
+        
+        # Extract user info from ID token claims if available
+        if "id_token_claims" in result:
+            claims = result["id_token_claims"]
+            self._user_info = {
+                "name": claims.get("name", "Unknown"),
+                "email": claims.get("preferred_username") or claims.get("email", "Unknown"),
+                "oid": claims.get("oid", ""),
+                "tenant": claims.get("tid", "")
+            }
     
     def _refresh_token(self) -> bool:
         """Refresh the access token using refresh token."""
@@ -329,6 +362,10 @@ class OAuthManager:
         
         # Need new authentication
         return None
+    
+    def get_user_info(self) -> Optional[Dict[str, str]]:
+        """Get current user information if authenticated."""
+        return self._user_info
     
     def reset(self) -> None:
         """Clear all authentication data."""
