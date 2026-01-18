@@ -1,0 +1,95 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "otlk-goog-tools"
+version = "0.1.0"
+description = "Ultimate Outlook & Google MCP Server - Zero-config authentication"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "lawlort32", email = "lawlort32@users.noreply.github.com"}
+]
+keywords = [
+    "outlook", "google", "calendar", "email", "mcp", "oauth",
+    "microsoft-graph", "gmail", "ai", "claude", "automation"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Communications :: Email",
+    "Topic :: Office/Business",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "mcp>=0.9.0",
+    "msal>=1.26.0",
+    "requests>=2.31.0",
+    "python-dateutil>=2.8.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "cryptography>=41.0.0",
+    "google-auth>=2.25.0",
+    "google-auth-oauthlib>=1.2.0",
+    "google-auth-httplib2>=0.2.0",
+    "google-api-python-client>=2.110.0",
+    "pywin32>=306; sys_platform == 'win32'",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.12.0",
+    "mypy>=1.7.0",
+    "ruff>=0.1.8",
+    "httpx>=0.25.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/lawlort32/OtlkGoogTools"
+Documentation = "https://github.com/lawlort32/OtlkGoogTools/blob/main/docs"
+Repository = "https://github.com/lawlort32/OtlkGoogTools"
+Issues = "https://github.com/lawlort32/OtlkGoogTools/issues"
+
+[project.scripts]
+otlk-goog-tools = "otlk_goog_tools.server:main"
+otlk-goog-auth = "otlk_goog_tools.cli:auth_cli"
+otlk-goog-config = "otlk_goog_tools.cli:config_cli"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+otlk_goog_tools = ["py.typed"]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --cov=otlk_goog_tools --cov-report=term-missing"
