@@ -94,7 +94,7 @@ class OtlkGoogToolsServer:
                             "subject": {"type": "string", "description": "Email subject"},
                             "body": {"type": "string", "description": "Email body"},
                             "cc": {"type": "array", "items": {"type": "string"}, "description": "CC recipients"},
-                            "bcc": {"type": "array", "items": {"type": "string"}, "description": "BCC recipients"
+                            "bcc": {"type": "array", "items": {"type": "string"}, "description": "BCC recipients"}
                         },
                         "required": ["to", "subject", "body"]
                     }
