@@ -225,8 +225,14 @@ class OtlkGoogToolsServer:
         from .outlook.calendar_tools import CalendarTools
 
         subject = args.get("subject")
-        start = datetime.fromisoformat(args.get("start"))
-        end = datetime.fromisoformat(args.get("end"))
+
+        # Parse datetime strings with error handling
+        try:
+            start = datetime.fromisoformat(args.get("start"))
+            end = datetime.fromisoformat(args.get("end"))
+        except (ValueError, TypeError) as e:
+            return f"Error: Invalid datetime format. Please use ISO format (e.g., '2024-01-20T14:00:00'). Details: {str(e)}"
+
         body = args.get("body")
         location = args.get("location")
         attendees = args.get("attendees", [])
@@ -292,17 +298,24 @@ class OtlkGoogToolsServer:
                 if "user_code" not in flow:
                     return "Failed to initiate device code flow."
 
-                message = flow.get("message", "")
                 user_code = flow.get("user_code", "")
                 verification_uri = flow.get("verification_uri", "https://microsoft.com/devicelogin")
 
-                # Start polling in background (simplified - in production use async)
+                # Start polling in background with error handling
                 import threading
 
                 def poll_for_token():
-                    result = self.authenticator.app.acquire_token_by_device_flow(flow)
-                    if "access_token" in result:
-                        self.authenticator._save_token_result(result)
+                    try:
+                        result = self.authenticator.app.acquire_token_by_device_flow(flow)
+                        if "access_token" in result:
+                            self.authenticator._save_token_result(result)
+                            logger.info("Device code authentication successful")
+                        else:
+                            logger.warning(
+                                f"Device code authentication failed: {result.get('error_description', 'Unknown error')}"
+                            )
+                    except Exception as e:
+                        logger.error(f"Error during device code polling: {e}")
 
                 thread = threading.Thread(target=poll_for_token, daemon=True)
                 thread.start()

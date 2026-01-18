@@ -317,14 +317,26 @@ class OAuthManager:
         self.token_store.save_token(result)
 
         # Extract user info from ID token claims if available
-        if "id_token_claims" in result:
+        if "id_token_claims" in result and isinstance(result["id_token_claims"], dict):
             claims = result["id_token_claims"]
+            # Validate that claims is a dictionary and extract info safely
             self._user_info = {
-                "name": claims.get("name", "Unknown"),
-                "email": claims.get("preferred_username") or claims.get("email", "Unknown"),
-                "oid": claims.get("oid", ""),
-                "tenant": claims.get("tid", ""),
+                "name": (
+                    claims.get("name", "Unknown")
+                    if isinstance(claims.get("name"), str)
+                    else "Unknown"
+                ),
+                "email": (
+                    (claims.get("preferred_username") or claims.get("email", "Unknown"))
+                    if isinstance(claims.get("preferred_username") or claims.get("email"), str)
+                    else "Unknown"
+                ),
+                "oid": claims.get("oid", "") if isinstance(claims.get("oid"), str) else "",
+                "tenant": claims.get("tid", "") if isinstance(claims.get("tid"), str) else "",
             }
+        else:
+            # No ID token claims available, set minimal user info
+            self._user_info = None
 
     def _refresh_token(self) -> bool:
         """Refresh the access token using refresh token."""
